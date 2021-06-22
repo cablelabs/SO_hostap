@@ -438,8 +438,8 @@ int wpas_dpp_ocf_info_add(struct wpa_supplicant *wpa_s, const char *cmd)
 
   new_info->uuid = uuid;
   new_info->cred = cred;
-  wpa_printf(MSG_DEBUG, "DPP_OCF_INFO: new UUID is %s\n", new_info->uuid);
-  wpa_printf(MSG_DEBUG, "DPP_OCF_INFO: new cred is %s\n", new_info->cred);
+  wpa_printf(MSG_DEBUG, "DPP_OCF_INFO: new UUID is %s", new_info->uuid);
+  wpa_printf(MSG_DEBUG, "DPP_OCF_INFO: new cred is %s", new_info->cred);
 
   struct ocf_onboarding_info *cur = wpa_s->ocf_onboarding_info;
   if (!cur) {
