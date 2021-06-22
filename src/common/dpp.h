@@ -399,6 +399,15 @@ struct dpp_controller_config {
 	int (*process_conf_obj)(void *ctx, struct dpp_authentication *auth);
 };
 
+#ifdef CONFIG_OCF_ONBOARDING
+/* Linked-list of OCF streamlined onboarding info to be used in configuration request messages*/
+struct ocf_onboarding_info {
+  const char *uuid;
+  const char *cred;
+  struct ocf_onboarding_info *next;
+};
+#endif
+
 #ifdef CONFIG_TESTING_OPTIONS
 enum dpp_test_behavior {
 	DPP_TEST_DISABLED = 0,

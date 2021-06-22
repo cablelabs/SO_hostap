@@ -1383,6 +1383,9 @@ struct wpa_supplicant {
 	char *dpp_groups_override;
 	unsigned int dpp_ignore_netaccesskey_mismatch:1;
 #endif /* CONFIG_TESTING_OPTIONS */
+#ifdef CONFIG_OCF_ONBOARDING
+  struct ocf_onboarding_info *ocf_onboarding_info;
+#endif /* CONFIG_OCF_ONBOARDING */
 #endif /* CONFIG_DPP */
 
 #ifdef CONFIG_FILS
