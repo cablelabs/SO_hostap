@@ -740,6 +740,9 @@ struct dpp_reconfig_id * dpp_gen_reconfig_id(const u8 *csign_key,
 					     size_t pp_key_len);
 int dpp_update_reconfig_id(struct dpp_reconfig_id *id);
 void dpp_free_reconfig_id(struct dpp_reconfig_id *id);
+#ifdef CONFIG_OCF_ONBOARDING
+void dpp_free_ocf_info(struct ocf_onboarding_info *ocf_info);
+#endif /* CONFIG_OCF_ONBOARDING */
 
 #endif /* CONFIG_DPP */
 #endif /* DPP_H */
