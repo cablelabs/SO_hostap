@@ -3111,6 +3111,12 @@ static int wpa_cli_cmd_dpp_stop_chirp(struct wpa_ctrl *ctrl, int argc,
 }
 
 #endif /* CONFIG_DPP2 */
+#ifdef CONFIG_OCF_ONBOARDING
+static int wpa_cli_cmd_dpp_ocf_info_add(struct wpa_ctrl *ctrl, int argc, char *argv[])
+{
+  return wpa_cli_cmd(ctrl, "DPP_OCF_INFO_ADD", 2, argc, argv);
+}
+#endif /* CONFIG_OCF_ONBOARDING */
 #endif /* CONFIG_DPP */
 
 
@@ -3907,6 +3913,11 @@ static const struct wpa_cli_cmd wpa_cli_commands[] = {
 	  cli_cmd_flag_none,
 	  "= stop DPP chirp" },
 #endif /* CONFIG_DPP2 */
+#ifdef CONFIG_OCF_ONBOARDING
+	{ "dpp_ocf_info_add", wpa_cli_cmd_dpp_ocf_info_add, NULL,
+	  cli_cmd_flag_none,
+	  "uuid=<device-uuid> cred=<base64 COSE cred>" },
+#endif /* CONFIG_OCF_ONBOARDING */
 #endif /* CONFIG_DPP */
 	{ "all_bss", wpa_cli_cmd_all_bss, NULL, cli_cmd_flag_none,
 	  "= list all BSS entries (scan results)" },

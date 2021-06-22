@@ -422,6 +422,14 @@ void wpas_dpp_connected(struct wpa_supplicant *wpa_s)
 
 #endif /* CONFIG_DPP2 */
 
+#ifdef CONFIG_OCF_ONBOARDING
+int wpas_dpp_ocf_info_add(struct wpa_supplicant *wpa_s, const char *cmd)
+{
+  wpa_printf(MSG_INFO, "DPP_OCF_INFO: cmd is %s\n", cmd);
+  return 0;
+}
+#endif /* CONFIG_OCF_ONBOARDING */
+
 
 static void wpas_dpp_tx_status(struct wpa_supplicant *wpa_s,
 			       unsigned int freq, const u8 *dst,

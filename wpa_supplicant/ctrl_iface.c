@@ -11794,6 +11794,12 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 		if (wpas_dpp_ca_set(wpa_s, buf + 10) < 0)
 			reply_len = -1;
 #endif /* CONFIG_DPP2 */
+#ifdef CONFIG_OCF_ONBOARDING
+	} else if (os_strncmp(buf, "DPP_OCF_INFO_ADD ", 17) == 0) {
+    wpa_printf(MSG_INFO, "DPP_OCF_ONBOARDING: Info parameters: %s\n", buf);
+    if (wpas_dpp_ocf_info_add(wpa_s, buf + 17) < 0)
+      reply_len = -1;
+#endif /* CONFIG_OCF_ONBOARDING */
 #endif /* CONFIG_DPP */
 	} else if (os_strncmp(buf, "MSCS ", 5) == 0) {
 		if (wpas_ctrl_iface_configure_mscs(wpa_s, buf + 5))
