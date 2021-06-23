@@ -824,7 +824,11 @@ struct wpabuf * dpp_build_conf_req(struct dpp_authentication *auth,
 struct wpabuf * dpp_build_conf_req_helper(struct dpp_authentication *auth,
 					  const char *name,
 					  enum dpp_netrole netrole,
-					  const char *mud_url, int *opclasses)
+					  const char *mud_url,
+#ifdef CONFIG_OCF_ONBOARDING
+						struct ocf_onboarding_info *ocf_info,
+#endif /* CONFIG_OCF_ONBOARDING */
+						int *opclasses)
 {
 	size_t len, name_len;
 	const char *tech = "infra";
@@ -858,6 +862,14 @@ struct wpabuf * dpp_build_conf_req_helper(struct dpp_authentication *auth,
 		len += 30 + csr_len;
 	}
 #endif /* CONFIG_DPP2 */
+#ifdef CONFIG_OCF_ONBOARDING
+	while (ocf_info != NULL) {
+		if ((ocf_info->uuid != NULL) && (ocf_info->cred != NULL)) {
+			wpa_printf(MSG_INFO, "DPP: Including OCF UUID %s and cred %s", ocf_info->uuid, ocf_info->cred);
+		}
+		ocf_info = ocf_info->next;
+	}
+#endif /* CONFIG_OCF_ONBOARDING */
 	json = wpabuf_alloc(len);
 	if (!json)
 		return NULL;

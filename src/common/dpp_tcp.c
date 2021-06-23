@@ -286,6 +286,9 @@ static void dpp_controller_start_gas_client(struct dpp_connection *conn)
 
 	dpp_name = conn->name ? conn->name : "Test";
 	buf = dpp_build_conf_req_helper(auth, dpp_name, conn->netrole, NULL,
+#ifdef CONFIG_OCF_ONBOARDING
+					NULL,
+#endif /* CONFIG_OCF_ONBOARDING */
 					NULL);
 	if (!buf) {
 		wpa_printf(MSG_DEBUG,

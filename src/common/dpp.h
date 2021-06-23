@@ -406,7 +406,7 @@ struct ocf_onboarding_info {
 	const char *cred;
 	struct ocf_onboarding_info *next;
 };
-#endif
+#endif /* CONFIG_OCF_ONBOARDING */
 
 #ifdef CONFIG_TESTING_OPTIONS
 enum dpp_test_behavior {
@@ -547,7 +547,11 @@ struct wpabuf * dpp_build_conf_req(struct dpp_authentication *auth,
 struct wpabuf * dpp_build_conf_req_helper(struct dpp_authentication *auth,
 					  const char *name,
 					  enum dpp_netrole netrole,
-					  const char *mud_url, int *opclasses);
+					  const char *mud_url,
+#ifdef CONFIG_OCF_ONBOARDING
+						struct ocf_onboarding_info *ocf_info,
+#endif /* CONFIG_OCF_ONBOARDING */
+						int *opclasses);
 int dpp_auth_conf_rx(struct dpp_authentication *auth, const u8 *hdr,
 		     const u8 *attr_start, size_t attr_len);
 int dpp_notify_new_qr_code(struct dpp_authentication *auth,
