@@ -863,12 +863,21 @@ struct wpabuf * dpp_build_conf_req_helper(struct dpp_authentication *auth,
 	}
 #endif /* CONFIG_DPP2 */
 #ifdef CONFIG_OCF_ONBOARDING
-	while (ocf_info != NULL) {
-		if ((ocf_info->uuid != NULL) && (ocf_info->cred != NULL)) {
-			wpa_printf(MSG_INFO, "DPP: Including OCF UUID %s and cred %s", ocf_info->uuid, ocf_info->cred);
+	struct ocf_onboarding_info *cur = ocf_info;
+	if (ocf_info) {
+		len += 36;
+		size_t uuid_len, cred_len;
+		while (cur != NULL) {
+			if ((cur->uuid) && (cur->cred)) {
+				wpa_printf(MSG_INFO, "DPP: Including OCF UUID %s and cred %s", ocf_info->uuid, ocf_info->cred);
+				uuid_len = os_strlen(cur->uuid);
+				cred_len = os_strlen(cur->cred);
+				len += 20 + uuid_len + cred_len;
+			}
+			cur = cur->next;
 		}
-		ocf_info = ocf_info->next;
 	}
+	wpa_printf(MSG_INFO, "DPP: Finale JSON len: %ld", len);
 #endif /* CONFIG_OCF_ONBOARDING */
 	json = wpabuf_alloc(len);
 	if (!json)
@@ -887,6 +896,26 @@ struct wpabuf * dpp_build_conf_req_helper(struct dpp_authentication *auth,
 		json_value_sep(json);
 		json_add_string(json, "mudurl", mud_url);
 	}
+#ifdef CONFIG_OCF_ONBOARDING
+	if (ocf_info) {
+		cur = ocf_info;
+		json_value_sep(json);
+		json_start_object(json, "org.openconnectivity");
+		json_start_array(json, "soinfo");
+		while (cur != NULL) {
+			json_start_object(json, NULL);
+			json_add_string(json, "uuid", cur->uuid);
+			json_value_sep(json);
+			json_add_string(json, "cred", cur->cred);
+			json_end_object(json);
+			if (cur->next)
+				json_value_sep(json);
+			cur = cur->next;
+		}
+		json_end_array(json);
+		json_end_object(json);
+	}
+#endif /* CONFIG_OCF_ONBOARDING */
 	if (opclasses) {
 		int i;
 
