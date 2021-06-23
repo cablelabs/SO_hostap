@@ -425,32 +425,32 @@ void wpas_dpp_connected(struct wpa_supplicant *wpa_s)
 #ifdef CONFIG_OCF_ONBOARDING
 int wpas_dpp_ocf_info_add(struct wpa_supplicant *wpa_s, const char *cmd)
 {
-  char *uuid = get_param(cmd, "uuid=");
-  char *cred = get_param(cmd, " cred=");
-  struct ocf_onboarding_info *new_info;
-  new_info = os_zalloc(sizeof(*new_info));
-  if ((new_info == NULL) || (uuid == NULL) || (cred == NULL) || (os_strlen(uuid) != 36)) {
-    os_free(new_info);
-    os_free(uuid);
-    os_free(cred);
-    return -1;
-  }
+	char *uuid = get_param(cmd, "uuid=");
+	char *cred = get_param(cmd, " cred=");
+	struct ocf_onboarding_info *new_info;
+	new_info = os_zalloc(sizeof(*new_info));
+	if ((new_info == NULL) || (uuid == NULL) || (cred == NULL) || (os_strlen(uuid) != 36)) {
+		os_free(new_info);
+		os_free(uuid);
+		os_free(cred);
+		return -1;
+	}
 
-  new_info->uuid = uuid;
-  new_info->cred = cred;
-  wpa_printf(MSG_DEBUG, "DPP_OCF_INFO: new UUID is %s", new_info->uuid);
-  wpa_printf(MSG_DEBUG, "DPP_OCF_INFO: new cred is %s", new_info->cred);
+	new_info->uuid = uuid;
+	new_info->cred = cred;
+	wpa_printf(MSG_DEBUG, "DPP_OCF_INFO: new UUID is %s", new_info->uuid);
+	wpa_printf(MSG_DEBUG, "DPP_OCF_INFO: new cred is %s", new_info->cred);
 
-  struct ocf_onboarding_info *cur = wpa_s->ocf_onboarding_info;
-  if (!cur) {
-    wpa_s->ocf_onboarding_info = new_info;
-    return 0;
-  }
-  while (cur->next != NULL) {
-    cur = cur->next;
-  }
-  cur->next = new_info;
-  return 0;
+	struct ocf_onboarding_info *cur = wpa_s->ocf_onboarding_info;
+	if (!cur) {
+		wpa_s->ocf_onboarding_info = new_info;
+		return 0;
+	}
+	while (cur->next != NULL) {
+		cur = cur->next;
+	}
+	cur->next = new_info;
+	return 0;
 }
 #endif /* CONFIG_OCF_ONBOARDING */
 
@@ -3445,8 +3445,8 @@ void wpas_dpp_deinit(struct wpa_supplicant *wpa_s)
 	wpa_s->dpp_reconfig_id = NULL;
 #endif /* CONFIG_DPP2 */
 #ifdef CONFIG_OCF_ONBOARDING
-  dpp_free_ocf_info(wpa_s->ocf_onboarding_info);
-  wpa_s->ocf_onboarding_info = NULL;
+	dpp_free_ocf_info(wpa_s->ocf_onboarding_info);
+	wpa_s->ocf_onboarding_info = NULL;
 #endif /* CONFIG_OCF_ONBOARDING */
 	offchannel_send_action_done(wpa_s);
 	wpas_dpp_listen_stop(wpa_s);

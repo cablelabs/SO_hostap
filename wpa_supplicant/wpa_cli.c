@@ -3114,7 +3114,7 @@ static int wpa_cli_cmd_dpp_stop_chirp(struct wpa_ctrl *ctrl, int argc,
 #ifdef CONFIG_OCF_ONBOARDING
 static int wpa_cli_cmd_dpp_ocf_info_add(struct wpa_ctrl *ctrl, int argc, char *argv[])
 {
-  return wpa_cli_cmd(ctrl, "DPP_OCF_INFO_ADD", 2, argc, argv);
+	return wpa_cli_cmd(ctrl, "DPP_OCF_INFO_ADD", 2, argc, argv);
 }
 #endif /* CONFIG_OCF_ONBOARDING */
 #endif /* CONFIG_DPP */

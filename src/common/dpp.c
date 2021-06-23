@@ -4427,13 +4427,13 @@ void dpp_notify_chirp_received(void *msg_ctx, int id, const u8 *src,
 #ifdef CONFIG_OCF_ONBOARDING
 void dpp_free_ocf_info(struct ocf_onboarding_info *ocf_info)
 {
-  struct ocf_onboarding_info *cur;
-  while (ocf_info != NULL) {
-    cur = ocf_info;
-    ocf_info = ocf_info->next;
-    os_free((char *)cur->uuid);
-    os_free((char *)cur->cred);
-    os_free(cur);
-  }
+	struct ocf_onboarding_info *cur;
+	while (ocf_info != NULL) {
+		cur = ocf_info;
+		ocf_info = ocf_info->next;
+		os_free((char *)cur->uuid);
+		os_free((char *)cur->cred);
+		os_free(cur);
+	}
 }
 #endif /* CONFIG_OCF_ONBOARDING */

@@ -402,9 +402,9 @@ struct dpp_controller_config {
 #ifdef CONFIG_OCF_ONBOARDING
 /* Linked-list of OCF streamlined onboarding info to be used in configuration request messages*/
 struct ocf_onboarding_info {
-  const char *uuid;
-  const char *cred;
-  struct ocf_onboarding_info *next;
+	const char *uuid;
+	const char *cred;
+	struct ocf_onboarding_info *next;
 };
 #endif
 

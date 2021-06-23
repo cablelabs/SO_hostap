@@ -11796,8 +11796,8 @@ char * wpa_supplicant_ctrl_iface_process(struct wpa_supplicant *wpa_s,
 #endif /* CONFIG_DPP2 */
 #ifdef CONFIG_OCF_ONBOARDING
 	} else if (os_strncmp(buf, "DPP_OCF_INFO_ADD ", 17) == 0) {
-    if (wpas_dpp_ocf_info_add(wpa_s, buf + 17) < 0)
-      reply_len = -1;
+		if (wpas_dpp_ocf_info_add(wpa_s, buf + 17) < 0)
+			reply_len = -1;
 #endif /* CONFIG_OCF_ONBOARDING */
 #endif /* CONFIG_DPP */
 	} else if (os_strncmp(buf, "MSCS ", 5) == 0) {
