@@ -41,5 +41,6 @@ int wpas_dpp_chirp(struct wpa_supplicant *wpa_s, const char *cmd);
 void wpas_dpp_chirp_stop(struct wpa_supplicant *wpa_s);
 int wpas_dpp_reconfig(struct wpa_supplicant *wpa_s, const char *cmd);
 int wpas_dpp_ca_set(struct wpa_supplicant *wpa_s, const char *cmd);
+int wpas_dpp_ocf_info_add(struct wpa_supplicant *wpa_s, const char *cmd);
 
 #endif /* DPP_SUPPLICANT_H */

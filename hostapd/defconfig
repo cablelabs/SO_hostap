@@ -402,3 +402,7 @@ CONFIG_IPV6=y
 # production use.
 # This requires CONFIG_IEEE80211W=y to be enabled, too.
 #CONFIG_PASN=y
+
+# Include support for OCF Streamlined Onboarding fields in DPP configuration
+# messages (Requires CONFIG_DPP=y)
+#CONFIG_OCF_ONBOARDING=y

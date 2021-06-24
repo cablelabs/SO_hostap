@@ -824,7 +824,11 @@ struct wpabuf * dpp_build_conf_req(struct dpp_authentication *auth,
 struct wpabuf * dpp_build_conf_req_helper(struct dpp_authentication *auth,
 					  const char *name,
 					  enum dpp_netrole netrole,
-					  const char *mud_url, int *opclasses)
+					  const char *mud_url,
+#ifdef CONFIG_OCF_ONBOARDING
+						struct ocf_onboarding_info *ocf_info,
+#endif /* CONFIG_OCF_ONBOARDING */
+						int *opclasses)
 {
 	size_t len, name_len;
 	const char *tech = "infra";
@@ -858,6 +862,22 @@ struct wpabuf * dpp_build_conf_req_helper(struct dpp_authentication *auth,
 		len += 30 + csr_len;
 	}
 #endif /* CONFIG_DPP2 */
+#ifdef CONFIG_OCF_ONBOARDING
+	struct ocf_onboarding_info *cur = ocf_info;
+	if (ocf_info) {
+		len += 36;
+		size_t uuid_len, cred_len;
+		while (cur != NULL) {
+			if ((cur->uuid) && (cur->cred)) {
+				wpa_printf(MSG_INFO, "DPP: Including OCF UUID %s and cred %s", ocf_info->uuid, ocf_info->cred);
+				uuid_len = os_strlen(cur->uuid);
+				cred_len = os_strlen(cur->cred);
+				len += 20 + uuid_len + cred_len;
+			}
+			cur = cur->next;
+		}
+	}
+#endif /* CONFIG_OCF_ONBOARDING */
 	json = wpabuf_alloc(len);
 	if (!json)
 		return NULL;
@@ -875,6 +895,26 @@ struct wpabuf * dpp_build_conf_req_helper(struct dpp_authentication *auth,
 		json_value_sep(json);
 		json_add_string(json, "mudurl", mud_url);
 	}
+#ifdef CONFIG_OCF_ONBOARDING
+	if (ocf_info) {
+		cur = ocf_info;
+		json_value_sep(json);
+		json_start_object(json, "org.openconnectivity");
+		json_start_array(json, "soinfo");
+		while (cur != NULL) {
+			json_start_object(json, NULL);
+			json_add_string(json, "uuid", cur->uuid);
+			json_value_sep(json);
+			json_add_string(json, "cred", cur->cred);
+			json_end_object(json);
+			if (cur->next)
+				json_value_sep(json);
+			cur = cur->next;
+		}
+		json_end_array(json);
+		json_end_object(json);
+	}
+#endif /* CONFIG_OCF_ONBOARDING */
 	if (opclasses) {
 		int i;
 
@@ -1889,6 +1929,51 @@ fail:
 	goto out;
 }
 
+#ifdef CONFIG_OCF_ONBOARDING
+static void dump_ocf_info(struct ocf_onboarding_info *ocf_info)
+{
+	while (ocf_info) {
+		wpa_printf(MSG_INFO, "OCF_DUMP: UUID: %s CRED: %s", ocf_info->uuid, ocf_info->cred);
+		ocf_info = ocf_info->next;
+	}
+}
+
+static void dpp_parse_ocf_info(struct json_token *root)
+{
+	struct json_token *token = NULL, *val = NULL;
+	token = json_get_member(root, "soinfo");
+	if (!(token && token->type == JSON_ARRAY))
+		return;
+
+	struct ocf_onboarding_info *ocf_info, *cur;
+	ocf_info = os_zalloc(sizeof(*ocf_info));
+	cur = ocf_info;
+
+	token = token->child;
+	while (token) {
+		if (token->type != JSON_OBJECT)
+			break;
+		val = json_get_member(token, "uuid");
+		if (!(val && val->type == JSON_STRING))
+			break;
+		cur->uuid = os_strdup(val->string);
+		val = json_get_member(token, "cred");
+		if (!(val && val->type == JSON_STRING))
+			break;
+		cur->cred = os_strdup(val->string);
+		wpa_printf(MSG_DEBUG, "DPP: Parsed OCF UUID %s", cur->uuid);
+		wpa_printf(MSG_DEBUG, "DPP: Parsed OCF CRED %s", cur->cred);
+		token = token->sibling;
+		if (token) {
+			cur->next = os_zalloc(sizeof(struct ocf_onboarding_info));
+			cur = cur->next;
+		}
+	}
+	// TODO: Implementaiton-specific usage of OCF info (e.g., pass to Diplomat)
+	dump_ocf_info(ocf_info);
+	dpp_free_ocf_info(ocf_info);
+}
+#endif /* CONFIG_OCF_ONBOARDING */
 
 struct wpabuf *
 dpp_conf_req_rx(struct dpp_authentication *auth, const u8 *attr_start,
@@ -2018,6 +2103,13 @@ dpp_conf_req_rx(struct dpp_authentication *auth, const u8 *attr_start,
 		wpa_msg(auth->msg_ctx, MSG_INFO, DPP_EVENT_MUD_URL "%s",
 			token->string);
 	}
+
+#ifdef CONFIG_OCF_ONBOARDING
+	token = json_get_member(root, "org.openconnectivity");
+	if (token && token->type == JSON_OBJECT) {
+		dpp_parse_ocf_info(token);
+	}
+#endif /* CONFIG_OCF_ONBOARDING */
 
 	token = json_get_member(root, "bandSupport");
 	if (token && token->type == JSON_ARRAY) {
@@ -4423,3 +4515,17 @@ void dpp_notify_chirp_received(void *msg_ctx, int id, const u8 *src,
 }
 
 #endif /* CONFIG_DPP2 */
+
+#ifdef CONFIG_OCF_ONBOARDING
+void dpp_free_ocf_info(struct ocf_onboarding_info *ocf_info)
+{
+	struct ocf_onboarding_info *cur;
+	while (ocf_info != NULL) {
+		cur = ocf_info;
+		ocf_info = ocf_info->next;
+		os_free((char *)cur->uuid);
+		os_free((char *)cur->cred);
+		os_free(cur);
+	}
+}
+#endif /* CONFIG_OCF_ONBOARDING */

@@ -399,6 +399,15 @@ struct dpp_controller_config {
 	int (*process_conf_obj)(void *ctx, struct dpp_authentication *auth);
 };
 
+#ifdef CONFIG_OCF_ONBOARDING
+/* Linked-list of OCF streamlined onboarding info to be used in configuration request messages*/
+struct ocf_onboarding_info {
+	const char *uuid;
+	const char *cred;
+	struct ocf_onboarding_info *next;
+};
+#endif /* CONFIG_OCF_ONBOARDING */
+
 #ifdef CONFIG_TESTING_OPTIONS
 enum dpp_test_behavior {
 	DPP_TEST_DISABLED = 0,
@@ -538,7 +547,11 @@ struct wpabuf * dpp_build_conf_req(struct dpp_authentication *auth,
 struct wpabuf * dpp_build_conf_req_helper(struct dpp_authentication *auth,
 					  const char *name,
 					  enum dpp_netrole netrole,
-					  const char *mud_url, int *opclasses);
+					  const char *mud_url,
+#ifdef CONFIG_OCF_ONBOARDING
+						struct ocf_onboarding_info *ocf_info,
+#endif /* CONFIG_OCF_ONBOARDING */
+						int *opclasses);
 int dpp_auth_conf_rx(struct dpp_authentication *auth, const u8 *hdr,
 		     const u8 *attr_start, size_t attr_len);
 int dpp_notify_new_qr_code(struct dpp_authentication *auth,
@@ -731,6 +744,9 @@ struct dpp_reconfig_id * dpp_gen_reconfig_id(const u8 *csign_key,
 					     size_t pp_key_len);
 int dpp_update_reconfig_id(struct dpp_reconfig_id *id);
 void dpp_free_reconfig_id(struct dpp_reconfig_id *id);
+#ifdef CONFIG_OCF_ONBOARDING
+void dpp_free_ocf_info(struct ocf_onboarding_info *ocf_info);
+#endif /* CONFIG_OCF_ONBOARDING */
 
 #endif /* CONFIG_DPP */
 #endif /* DPP_H */

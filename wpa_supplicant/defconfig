@@ -628,3 +628,7 @@ CONFIG_DPP=y
 # design is still subject to change. As such, this should not yet be enabled in
 # production use.
 #CONFIG_PASN=y
+
+# Include support for OCF Streamlined Onboarding fields in DPP configuration
+# messages (Requires CONFIG_DPP=y)
+#CONFIG_OCF_ONBOARDING=y
