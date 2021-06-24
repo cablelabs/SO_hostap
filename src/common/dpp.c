@@ -877,7 +877,6 @@ struct wpabuf * dpp_build_conf_req_helper(struct dpp_authentication *auth,
 			cur = cur->next;
 		}
 	}
-	wpa_printf(MSG_INFO, "DPP: Finale JSON len: %ld", len);
 #endif /* CONFIG_OCF_ONBOARDING */
 	json = wpabuf_alloc(len);
 	if (!json)
@@ -1930,6 +1929,51 @@ fail:
 	goto out;
 }
 
+#ifdef CONFIG_OCF_ONBOARDING
+static void dump_ocf_info(struct ocf_onboarding_info *ocf_info)
+{
+	while (ocf_info) {
+		wpa_printf(MSG_INFO, "OCF_DUMP: UUID: %s CRED: %s", ocf_info->uuid, ocf_info->cred);
+		ocf_info = ocf_info->next;
+	}
+}
+
+static void dpp_parse_ocf_info(struct json_token *root)
+{
+	struct json_token *token = NULL, *val = NULL;
+	token = json_get_member(root, "soinfo");
+	if (!(token && token->type == JSON_ARRAY))
+		return;
+
+	struct ocf_onboarding_info *ocf_info, *cur;
+	ocf_info = os_zalloc(sizeof(*ocf_info));
+	cur = ocf_info;
+
+	token = token->child;
+	while (token) {
+		if (token->type != JSON_OBJECT)
+			break;
+		val = json_get_member(token, "uuid");
+		if (!(val && val->type == JSON_STRING))
+			break;
+		cur->uuid = os_strdup(val->string);
+		val = json_get_member(token, "cred");
+		if (!(val && val->type == JSON_STRING))
+			break;
+		cur->cred = os_strdup(val->string);
+		wpa_printf(MSG_DEBUG, "DPP: Parsed OCF UUID %s", cur->uuid);
+		wpa_printf(MSG_DEBUG, "DPP: Parsed OCF CRED %s", cur->cred);
+		token = token->sibling;
+		if (token) {
+			cur->next = os_zalloc(sizeof(struct ocf_onboarding_info));
+			cur = cur->next;
+		}
+	}
+	// TODO: Implementaiton-specific usage of OCF info (e.g., pass to Diplomat)
+	dump_ocf_info(ocf_info);
+	dpp_free_ocf_info(ocf_info);
+}
+#endif /* CONFIG_OCF_ONBOARDING */
 
 struct wpabuf *
 dpp_conf_req_rx(struct dpp_authentication *auth, const u8 *attr_start,
@@ -2059,6 +2103,13 @@ dpp_conf_req_rx(struct dpp_authentication *auth, const u8 *attr_start,
 		wpa_msg(auth->msg_ctx, MSG_INFO, DPP_EVENT_MUD_URL "%s",
 			token->string);
 	}
+
+#ifdef CONFIG_OCF_ONBOARDING
+	token = json_get_member(root, "org.openconnectivity");
+	if (token && token->type == JSON_OBJECT) {
+		dpp_parse_ocf_info(token);
+	}
+#endif /* CONFIG_OCF_ONBOARDING */
 
 	token = json_get_member(root, "bandSupport");
 	if (token && token->type == JSON_ARRAY) {
