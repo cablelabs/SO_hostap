@@ -1930,24 +1930,14 @@ fail:
 }
 
 #ifdef CONFIG_OCF_ONBOARDING
-static void dump_ocf_info(struct ocf_onboarding_info *ocf_info)
-{
-	while (ocf_info) {
-		wpa_printf(MSG_INFO, "OCF_DUMP: UUID: %s CRED: %s", ocf_info->uuid, ocf_info->cred);
-		ocf_info = ocf_info->next;
-	}
-}
-
-static void dpp_parse_ocf_info(struct json_token *root)
+static void dpp_parse_ocf_info(void *msg_ctx, struct json_token *root)
 {
 	struct json_token *token = NULL, *val = NULL;
 	token = json_get_member(root, "soinfo");
 	if (!(token && token->type == JSON_ARRAY))
 		return;
 
-	struct ocf_onboarding_info *ocf_info, *cur;
-	ocf_info = os_zalloc(sizeof(*ocf_info));
-	cur = ocf_info;
+	char *uuid = NULL, *cred = NULL;
 
 	token = token->child;
 	while (token) {
@@ -1956,22 +1946,20 @@ static void dpp_parse_ocf_info(struct json_token *root)
 		val = json_get_member(token, "uuid");
 		if (!(val && val->type == JSON_STRING))
 			break;
-		cur->uuid = os_strdup(val->string);
+		uuid = os_strdup(val->string);
 		val = json_get_member(token, "cred");
 		if (!(val && val->type == JSON_STRING))
 			break;
-		cur->cred = os_strdup(val->string);
-		wpa_printf(MSG_DEBUG, "DPP: Parsed OCF UUID %s", cur->uuid);
-		wpa_printf(MSG_DEBUG, "DPP: Parsed OCF CRED %s", cur->cred);
+		cred = os_strdup(val->string);
+		wpa_printf(MSG_DEBUG, "DPP: Parsed OCF UUID %s", uuid);
+		wpa_printf(MSG_DEBUG, "DPP: Parsed OCF CRED %s", cred);
+
+		wpa_msg_ctrl(msg_ctx, MSG_INFO, DPP_EVENT_OCF_SO_INFO_RECEIVED "%s %s", uuid, cred);
+
+		os_free(uuid);
+		os_free(cred);
 		token = token->sibling;
-		if (token) {
-			cur->next = os_zalloc(sizeof(struct ocf_onboarding_info));
-			cur = cur->next;
-		}
 	}
-	// TODO: Implementaiton-specific usage of OCF info (e.g., pass to Diplomat)
-	dump_ocf_info(ocf_info);
-	dpp_free_ocf_info(ocf_info);
 }
 #endif /* CONFIG_OCF_ONBOARDING */
 
@@ -2107,7 +2095,8 @@ dpp_conf_req_rx(struct dpp_authentication *auth, const u8 *attr_start,
 #ifdef CONFIG_OCF_ONBOARDING
 	token = json_get_member(root, "org.openconnectivity");
 	if (token && token->type == JSON_OBJECT) {
-		dpp_parse_ocf_info(token);
+		dpp_parse_ocf_info(auth->msg_ctx, token);
+		// TODO: call to wpa_msg_ctrl() here with extracted info (somehow)
 	}
 #endif /* CONFIG_OCF_ONBOARDING */
 
